@@ -1,13 +1,21 @@
 // =====================================================
 // IEEE KSB Quiz – Google Apps Script Web App
 // =====================================================
-// Instructions:
-//   1. Go to: https://script.google.com
-//   2. Create a new project → paste this code
-//   3. Click Deploy → New Deployment → Web App
-//   4. Execute as: Me | Access: Anyone
-//   5. Copy the Web App URL and paste it in index.html
-//      where it says: const APPS_SCRIPT_URL = "PASTE_HERE"
+// ✅ الـ Sheet جاهز ومتصل أوتوماتيك بالـ Spreadsheet ده:
+// https://docs.google.com/spreadsheets/d/1QstBc6sR3Uzs7QjqvsH2DcdN6H5wsNFXQu1yT4uxxLs/edit
+//
+// خطوات النشر:
+//   1. افتح الـ Spreadsheet من الرابط أعلاه
+//   2. Extensions → Apps Script
+//   3. احذف الكود الموجود والصق الكود ده كله
+//   4. Deploy → New Deployment → Web App
+//      - Execute as: Me
+//      - Who has access: Anyone
+//   5. انسخ الـ Web App URL
+//   6. في index.html، في السطر:
+//      const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+//      بدّل النص ده بالـ URL
+//   7. ارفع index.html على GitHub تاني (git add . → commit → push)
 // =====================================================
 
 const SHEET_NAME = "Quiz Results";
