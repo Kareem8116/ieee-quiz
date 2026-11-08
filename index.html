@@ -88,7 +88,7 @@
     /* ─── PROGRESS BAR ─── */
     .progress-wrap {
       background: var(--ieee-dark);
-      height: 6px;
+      height: 5px;
     }
     .progress-bar {
       height: 100%;
@@ -102,6 +102,15 @@
       margin: 0 auto;
       padding: 32px 20px 60px;
     }
+    /* During quiz: container fills remaining height with no scroll */
+    body.quiz-mode { overflow: hidden; }
+    body.quiz-mode .container {
+      padding: 0;
+      height: calc(100vh - var(--header-h, 76px));
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+    }
 
     /* ─── PANELS ─── */
     .panel {
@@ -112,6 +121,99 @@
       display: none;
     }
     .panel.active { display: block; }
+
+    /* ─── QUIZ PANEL — FULLSCREEN LAYOUT ─── */
+    #panelQuiz {
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    #panelQuiz.active {
+      display: flex;
+    }
+
+    /* Dots navigation strip */
+    .dots-nav-strip {
+      background: var(--white);
+      border-bottom: 2px solid var(--gray-100);
+      padding: 10px 16px;
+      flex-shrink: 0;
+    }
+    .dots-nav-strip-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      max-height: 90px;
+      overflow-y: auto;
+    }
+
+    /* Dots — bigger with numbers inside */
+    .dot {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--gray-100);
+      border: 2px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--gray-500, #6b7280);
+      cursor: pointer;
+      transition: background .2s, border-color .2s, transform .15s, color .2s;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .dot:hover { border-color: var(--ieee-accent); transform: scale(1.12); }
+    .dot.answered {
+      background: var(--ieee-light);
+      border-color: var(--ieee-blue);
+      color: var(--ieee-blue);
+    }
+    .dot.current {
+      background: var(--ieee-blue);
+      border-color: var(--ieee-dark);
+      color: #fff;
+      transform: scale(1.18);
+    }
+
+    /* Scrollable question area */
+    .question-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Warning strip */
+    .submit-warning {
+      background: #fefce8;
+      border-top: 1px solid #fde68a;
+      padding: 10px 24px;
+      font-size: .85rem;
+      color: #92400e;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    /* Fixed bottom nav */
+    .quiz-nav-bottom {
+      background: var(--white);
+      border-top: 2px solid var(--gray-100);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+      box-shadow: 0 -4px 16px rgba(0,0,0,.07);
+    }
 
     /* ─── WELCOME ─── */
     .welcome-icon {
@@ -194,42 +296,22 @@
     .btn-primary {
       background: linear-gradient(135deg, var(--ieee-blue), var(--ieee-accent));
       color: #fff;
-      width: 100%;
     }
     .btn-secondary {
       background: var(--gray-100);
       color: var(--gray-800);
       border: 2px solid var(--gray-200);
     }
+    /* full-width only on welcome */
+    #panelWelcome .btn-primary { width: 100%; }
 
-    /* ─── QUIZ ─── */
-    .question-counter {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--gray-100);
-    }
-    .q-num { font-size: .82rem; font-weight: 600; color: var(--gray-400); letter-spacing: .5px; }
-    .dots {
-      display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 320px;
-    }
-    .dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--gray-200);
-      transition: background .3s;
-      cursor: default;
-    }
-    .dot.answered { background: var(--ieee-blue); }
-    .dot.current  { background: var(--ieee-accent); transform: scale(1.3); }
-
+    /* ─── QUIZ internal elements ─── */
     .question-text {
-      font-size: 1.08rem;
+      font-size: 1.05rem;
       font-weight: 600;
       color: var(--gray-800);
       line-height: 1.65;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .question-num-badge {
       display: inline-block;
@@ -242,13 +324,14 @@
       margin-bottom: 10px;
       letter-spacing: .3px;
     }
+    .q-num { font-size: .82rem; font-weight: 600; color: var(--gray-400); letter-spacing: .5px; margin-bottom: 2px; }
 
-    .options { display: flex; flex-direction: column; gap: 12px; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
     .option {
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 14px 18px;
+      padding: 12px 16px;
       border: 2px solid var(--gray-200);
       border-radius: 10px;
       cursor: pointer;
@@ -267,29 +350,9 @@
       transition: background .2s, color .2s;
     }
     .option.selected .option-letter { background: var(--ieee-blue); color: #fff; }
-    .option-text { font-size: .95rem; color: var(--gray-800); }
+    .option-text { font-size: .92rem; color: var(--gray-800); line-height: 1.4; }
 
-    .quiz-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 28px;
-      padding-top: 20px;
-      border-top: 2px solid var(--gray-100);
-      gap: 12px;
-    }
-    .nav-info { font-size: .82rem; color: var(--gray-400); font-weight: 500; }
-
-    .submit-warning {
-      background: #fefce8;
-      border: 1px solid #fde68a;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-top: 20px;
-      font-size: .85rem;
-      color: #92400e;
-      display: none;
-    }
+    .nav-info { font-size: .8rem; color: var(--gray-400); font-weight: 500; text-align: center; flex: 1; }
 
     /* ─── RESULTS ─── */
     .result-header {
@@ -449,11 +512,25 @@
 
     /* ─── RESPONSIVE ─── */
     @media(max-width:600px) {
-      .panel { padding: 28px 20px; }
-      .admin-header { margin: -28px -20px 24px; padding: 20px; }
-      .header-inner { padding: 14px 16px; }
-      .timer-pill { font-size: 1.1rem; padding: 6px 14px; }
-      .header-text h1 { font-size: 1rem; }
+      .panel { padding: 28px 16px; }
+      .admin-header { margin: -28px -16px 24px; padding: 18px; }
+      .header-inner { padding: 10px 14px; gap: 12px; }
+      .timer-pill { font-size: 1rem; padding: 5px 12px; }
+      .header-text h1 { font-size: .92rem; }
+      .header-text p  { font-size: .72rem; }
+      .question-scroll-area { padding: 14px 14px 8px; }
+      .dots-nav-strip { padding: 8px 10px; }
+      .question-text { font-size: .97rem; }
+      .option { padding: 10px 12px; gap: 10px; }
+      .option-text { font-size: .88rem; }
+      .quiz-nav-bottom { padding: 10px 14px; }
+      .dot { width: 26px; height: 26px; font-size: .62rem; }
+      .info-grid { grid-template-columns: repeat(2,1fr); }
+      .result-actions { flex-direction: column; }
+    }
+    @media(max-width:380px) {
+      .dot { width: 23px; height: 23px; font-size: .58rem; gap: 4px; }
+      .header-text p { display: none; }
     }
   </style>
 </head>
@@ -549,21 +626,32 @@
 
   <!-- QUIZ PANEL -->
   <div class="panel" id="panelQuiz">
-    <div class="question-counter">
-      <span class="q-num" id="qCounter">Question 1 of 30</span>
-      <div class="dots" id="dotsRow"></div>
+
+    <!-- Dots navigation strip -->
+    <div class="dots-nav-strip">
+      <div class="q-num" id="qCounter" style="text-align:center;margin-bottom:6px">Question 1 of 30</div>
+      <div class="dots-nav-strip-inner" id="dotsRow"></div>
     </div>
-    <div class="question-num-badge" id="qBadge">Q1</div>
-    <p class="question-text" id="qText"></p>
-    <div class="options" id="optionsWrap"></div>
+
+    <!-- Scrollable question + options -->
+    <div class="question-scroll-area">
+      <div class="question-num-badge" id="qBadge">Q1</div>
+      <p class="question-text" id="qText"></p>
+      <div class="options" id="optionsWrap"></div>
+    </div>
+
+    <!-- Warning strip -->
     <div class="submit-warning" id="submitWarning">
       ⚠️ You still have <span id="unansweredCount"></span> unanswered question(s). Submit anyway?
     </div>
-    <div class="quiz-nav">
-      <button class="btn btn-secondary" id="btnPrev" onclick="goQuestion(-1)">← Previous</button>
+
+    <!-- Fixed bottom navigation -->
+    <div class="quiz-nav-bottom">
+      <button class="btn btn-secondary" id="btnPrev" onclick="goQuestion(-1)" style="width:auto;padding:12px 20px">← Prev</button>
       <span class="nav-info" id="navInfo"></span>
-      <button class="btn btn-primary" id="btnNext" onclick="goNext()">Next →</button>
+      <button class="btn btn-primary" id="btnNext" onclick="goNext()" style="width:auto;padding:12px 24px">Next →</button>
     </div>
+
   </div>
 
   <!-- RESULTS PANEL -->
@@ -901,6 +989,12 @@ function startQuiz() {
   answers      = new Array(QUESTIONS.length).fill(null);
   currentQ     = 0;
   quizActive   = true;
+
+  // measure real header height for CSS var
+  const hh = document.getElementById('mainHeader').offsetHeight;
+  document.documentElement.style.setProperty('--header-h', hh + 'px');
+  document.body.classList.add('quiz-mode');
+
   buildDots();
   renderQuestion();
   showPanel('panelQuiz');
@@ -914,6 +1008,9 @@ function buildDots() {
     const d = document.createElement('div');
     d.className = 'dot';
     d.id = `dot-${i}`;
+    d.textContent = i + 1;
+    d.title = `Question ${i+1}`;
+    d.onclick = () => { currentQ = i; renderQuestion(); };
     row.appendChild(d);
   });
 }
@@ -923,6 +1020,9 @@ function updateDots() {
     d.className = 'dot' +
       (i === currentQ ? ' current' : (answers[i] !== null ? ' answered' : ''));
   });
+  // scroll active dot into view inside the strip
+  const activeDot = document.getElementById(`dot-${currentQ}`);
+  if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
   // progress bar
   const done = answers.filter(a=>a!==null).length;
   document.getElementById('progressBar').style.width = (done/QUESTIONS.length*100)+'%';
@@ -1056,6 +1156,7 @@ function submitQuiz(auto=false) {
   badge.className    = 'result-badge ' + (pass ? 'badge-pass' : 'badge-fail');
 
   buildReview();
+  document.body.classList.remove('quiz-mode');
   showPanel('panelResults');
   document.getElementById('timerDisplay').style.display = 'none';
   document.getElementById('progressBar').style.width = '100%';
@@ -1095,6 +1196,7 @@ function buildReview() {
 function restartQuiz() {
   stopTimer();
   quizActive = false;
+  document.body.classList.remove('quiz-mode');
   document.getElementById('studentName').value = '';
   document.getElementById('studentId').value   = '';
   document.getElementById('timerDisplay').style.display = 'none';
