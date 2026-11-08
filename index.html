@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IEEE KSB – Week 1 Networking Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ieee-blue:    #00629B;
+      --ieee-dark:    #003865;
+      --ieee-light:   #e8f4fd;
+      --ieee-accent:  #0096D6;
+      --correct:      #16a34a;
+      --wrong:        #dc2626;
+      --white:        #ffffff;
+      --gray-50:      #f9fafb;
+      --gray-100:     #f3f4f6;
+      --gray-200:     #e5e7eb;
+      --gray-400:     #9ca3af;
+      --gray-600:     #4b5563;
+      --gray-800:     #1f2937;
+      --radius:       12px;
+      --shadow:       0 4px 20px rgba(0,0,0,.1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      background: linear-gradient(135deg, var(--ieee-dark) 0%, var(--ieee-blue) 60%, var(--ieee-accent) 100%);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,54,101,.4);
+    }
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .ieee-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .ieee-logo svg { width: 44px; height: 44px; }
+    .header-text h1 {
+      color: var(--white);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .header-text p {
+      color: rgba(255,255,255,.8);
+      font-size: .82rem;
+      margin-top: 2px;
+    }
+    .timer-pill {
+      margin-left: auto;
+      background: rgba(255,255,255,.18);
+      border: 2px solid rgba(255,255,255,.35);
+      border-radius: 50px;
+      padding: 8px 20px;
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 2px;
+      transition: background .3s, border-color .3s;
+      flex-shrink: 0;
+    }
+    .timer-pill.warning { background: rgba(220,38,38,.55); border-color: #fca5a5; }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-wrap {
+      background: var(--ieee-dark);
+      height: 6px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #a5f3fc);
+      transition: width .4s ease;
+    }
+
+    /* ─── CONTAINER ─── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    /* ─── PANELS ─── */
+    .panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 40px 48px;
+      display: none;
+    }
+    .panel.active { display: block; }
+
+    /* ─── WELCOME ─── */
+    .welcome-icon {
+      font-size: 3.5rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .welcome-title {
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ieee-dark);
+      margin-bottom: 8px;
+    }
+    .welcome-sub {
+      text-align: center;
+      color: var(--gray-600);
+      margin-bottom: 32px;
+      font-size: .95rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .info-card {
+      background: var(--ieee-light);
+      border-left: 4px solid var(--ieee-blue);
+      border-radius: 8px;
+      padding: 14px 18px;
+    }
+    .info-card .label { font-size: .75rem; color: var(--gray-600); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+    .info-card .value { font-size: 1.1rem; font-weight: 700; color: var(--ieee-dark); margin-top: 4px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 600; font-size: .9rem; color: var(--gray-800); margin-bottom: 7px; }
+    .form-group input {
+      width: 100%;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .form-group input:focus { border-color: var(--ieee-blue); }
+    .form-group input.error { border-color: var(--wrong); }
+
+    .instructions {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+    }
+    .instructions h3 { font-size: .9rem; font-weight: 700; color: var(--gray-800); margin-bottom: 10px; }
+    .instructions ul { list-style: none; }
+    .instructions li { font-size: .88rem; color: var(--gray-600); padding: 4px 0; display: flex; gap: 8px; }
+    .instructions li::before { content: "→"; color: var(--ieee-blue); font-weight: 700; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform .15s, box-shadow .15s, opacity .2s;
+      font-family: inherit;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+    .btn:active { transform: none; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--ieee-blue), var(--ieee-accent));
+      color: #fff;
+      width: 100%;
+    }
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-800);
+      border: 2px solid var(--gray-200);
+    }
+
+    /* ─── QUIZ ─── */
+    .question-counter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+    .q-num { font-size: .82rem; font-weight: 600; color: var(--gray-400); letter-spacing: .5px; }
+    .dots {
+      display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 320px;
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--gray-200);
+      transition: background .3s;
+      cursor: default;
+    }
+    .dot.answered { background: var(--ieee-blue); }
+    .dot.current  { background: var(--ieee-accent); transform: scale(1.3); }
+
+    .question-text {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+    .question-num-badge {
+      display: inline-block;
+      background: var(--ieee-blue);
+      color: #fff;
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-size: .8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: .3px;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 12px; }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border: 2px solid var(--gray-200);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      user-select: none;
+    }
+    .option:hover { border-color: var(--ieee-accent); background: var(--ieee-light); }
+    .option.selected { border-color: var(--ieee-blue); background: var(--ieee-light); }
+    .option input[type="radio"] { display: none; }
+    .option-letter {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; color: var(--gray-600);
+      flex-shrink: 0;
+      transition: background .2s, color .2s;
+    }
+    .option.selected .option-letter { background: var(--ieee-blue); color: #fff; }
+    .option-text { font-size: .95rem; color: var(--gray-800); }
+
+    .quiz-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 2px solid var(--gray-100);
+      gap: 12px;
+    }
+    .nav-info { font-size: .82rem; color: var(--gray-400); font-weight: 500; }
+
+    .submit-warning {
+      background: #fefce8;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 20px;
+      font-size: .85rem;
+      color: #92400e;
+      display: none;
+    }
+
+    /* ─── RESULTS ─── */
+    .result-header {
+      text-align: center;
+      padding-bottom: 32px;
+      border-bottom: 2px solid var(--gray-100);
+      margin-bottom: 32px;
+    }
+    .score-circle {
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      border: 8px solid var(--ieee-blue);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      background: var(--ieee-light);
+      box-shadow: 0 0 0 4px rgba(0,98,155,.12);
+    }
+    .score-number { font-size: 2.4rem; font-weight: 800; color: var(--ieee-dark); line-height: 1; }
+    .score-out   { font-size: .85rem; color: var(--gray-600); font-weight: 500; }
+    .score-pct   { font-size: 1rem; font-weight: 700; color: var(--ieee-blue); margin-top: 4px; }
+    .result-name { font-size: 1.3rem; font-weight: 700; color: var(--ieee-dark); margin-bottom: 6px; }
+    .result-badge {
+      display: inline-block;
+      padding: 6px 20px; border-radius: 50px;
+      font-size: .88rem; font-weight: 700;
+    }
+    .badge-pass { background: #dcfce7; color: #15803d; }
+    .badge-fail { background: #fee2e2; color: #b91c1c; }
+
+    .review-title {
+      font-size: 1.1rem; font-weight: 700; color: var(--ieee-dark); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .review-item {
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .review-q {
+      padding: 14px 18px;
+      background: var(--gray-50);
+      font-weight: 600; font-size: .9rem;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .review-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+    .review-answers { padding: 12px 18px; display: flex; flex-direction: column; gap: 6px; }
+    .review-answer { font-size: .88rem; }
+    .review-answer .label { font-weight: 600; color: var(--gray-400); font-size: .78rem; display: block; margin-bottom: 2px; }
+    .your-answer  { color: var(--wrong); }
+    .correct-ans  { color: var(--correct); }
+    .skip-answer  { color: var(--gray-400); font-style: italic; }
+
+    .result-actions {
+      display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap;
+    }
+    .result-actions .btn { flex: 1; min-width: 160px; }
+
+    /* ─── ADMIN ─── */
+    .admin-header {
+      background: linear-gradient(135deg, var(--ieee-dark), var(--ieee-blue));
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 24px 32px;
+      margin: -40px -48px 32px;
+      color: #fff;
+    }
+    .admin-header h2 { font-size: 1.3rem; font-weight: 700; }
+    .admin-header p  { font-size: .85rem; opacity: .8; margin-top: 4px; }
+
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--ieee-light);
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--ieee-dark); }
+    .stat-label { font-size: .78rem; color: var(--gray-600); font-weight: 500; margin-top: 4px; }
+
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--gray-200); margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead tr { background: var(--ieee-dark); color: #fff; }
+    thead th { padding: 12px 16px; text-align: left; font-weight: 600; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--gray-100); transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--ieee-light); }
+    tbody td { padding: 12px 16px; vertical-align: middle; }
+    .badge-sm {
+      display: inline-block; padding: 3px 10px; border-radius: 50px;
+      font-size: .75rem; font-weight: 700;
+    }
+    .badge-sm.pass { background: #dcfce7; color: #15803d; }
+    .badge-sm.fail { background: #fee2e2; color: #b91c1c; }
+
+    .export-btn {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+    }
+
+    /* ─── LOGIN ─── */
+    .login-wrap {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .login-title {
+      font-size: 1.5rem; font-weight: 700; color: var(--ieee-dark);
+      text-align: center; margin-bottom: 8px;
+    }
+    .login-sub {
+      text-align: center; color: var(--gray-600); font-size: .9rem; margin-bottom: 28px;
+    }
+    .login-error {
+      background: #fee2e2; color: #b91c1c; border-radius: 8px;
+      padding: 12px 16px; font-size: .88rem; margin-bottom: 16px; display: none;
+    }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--ieee-dark); color: #fff;
+      padding: 14px 24px; border-radius: 10px;
+      font-size: .9rem; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      transform: translateY(80px); opacity: 0;
+      transition: transform .3s, opacity .3s;
+      z-index: 999;
+      max-width: 340px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ─── TIMEOUT MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500; opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: #fff; border-radius: 16px; padding: 40px 48px;
+      max-width: 420px; width: 90%; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      transform: scale(.9); transition: transform .3s;
+    }
+    .modal-overlay.active .modal-box { transform: scale(1); }
+    .modal-icon { font-size: 3rem; margin-bottom: 16px; }
+    .modal-title { font-size: 1.4rem; font-weight: 700; color: var(--ieee-dark); margin-bottom: 10px; }
+    .modal-msg   { color: var(--gray-600); font-size: .95rem; margin-bottom: 24px; }
+
+    /* ─── RESPONSIVE ─── */
+    @media(max-width:600px) {
+      .panel { padding: 28px 20px; }
+      .admin-header { margin: -28px -20px 24px; padding: 20px; }
+      .header-inner { padding: 14px 16px; }
+      .timer-pill { font-size: 1.1rem; padding: 6px 14px; }
+      .header-text h1 { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header class="header" id="mainHeader">
+  <div class="header-inner">
+    <div class="ieee-logo">
+      <!-- IEEE Diamond Logo SVG -->
+      <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="28" height="28" rx="4" fill="rgba(255,255,255,0.15)"/>
+        <path d="M22 10 L34 22 L22 34 L10 22 Z" fill="rgba(255,255,255,0.9)"/>
+        <text x="22" y="26" text-anchor="middle" font-size="9" font-weight="800" fill="#003865" font-family="Arial">IEEE</text>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>IEEE KSB – Networking Committee</h1>
+      <p id="headerSub">Week 1 Quiz &nbsp;|&nbsp; Introduction to Networking &nbsp;|&nbsp; 30 Questions</p>
+    </div>
+    <div class="timer-pill" id="timerDisplay" style="display:none">20:00</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  </div>
+</header>
+
+<!-- ─── TIMEOUT MODAL ─── -->
+<div class="modal-overlay" id="timeoutModal">
+  <div class="modal-box">
+    <div class="modal-icon">⏰</div>
+    <div class="modal-title">Time's Up!</div>
+    <div class="modal-msg">Your exam has been submitted automatically. Calculating your results…</div>
+    <button class="btn btn-primary" onclick="dismissModal()">View Results</button>
+  </div>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast"></div>
+
+<!-- ─── MAIN ─── -->
+<div class="container">
+
+  <!-- WELCOME PANEL -->
+  <div class="panel active" id="panelWelcome">
+    <div class="welcome-icon">📡</div>
+    <h2 class="welcome-title">Week 1 Networking Quiz</h2>
+    <p class="welcome-sub">Introduction to Networking &nbsp;·&nbsp; IEEE KSB Networking Committee</p>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="label">Questions</div>
+        <div class="value">30</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Time Limit</div>
+        <div class="value">20 Minutes</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Points</div>
+        <div class="value">1 per Q</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Pass Score</div>
+        <div class="value">60%</div>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <h3>📋 Instructions</h3>
+      <ul>
+        <li>Choose the single best answer for each question.</li>
+        <li>Each question is worth 1 point (30 total).</li>
+        <li>The timer starts as soon as you begin — 20 minutes.</li>
+        <li>Exam submits automatically when time runs out.</li>
+        <li>Your results will be shown immediately after submission.</li>
+      </ul>
+    </div>
+
+    <div class="form-group">
+      <label for="studentName">Full Name *</label>
+      <input type="text" id="studentName" placeholder="Enter your full name…" autocomplete="name"/>
+    </div>
+    <div class="form-group">
+      <label for="studentId">Student ID / IEEE ID <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+      <input type="text" id="studentId" placeholder="e.g. 20231234"/>
+    </div>
+
+    <button class="btn btn-primary" onclick="startQuiz()">
+      🚀 &nbsp; Start Exam
+    </button>
+  </div>
+
+  <!-- QUIZ PANEL -->
+  <div class="panel" id="panelQuiz">
+    <div class="question-counter">
+      <span class="q-num" id="qCounter">Question 1 of 30</span>
+      <div class="dots" id="dotsRow"></div>
+    </div>
+    <div class="question-num-badge" id="qBadge">Q1</div>
+    <p class="question-text" id="qText"></p>
+    <div class="options" id="optionsWrap"></div>
+    <div class="submit-warning" id="submitWarning">
+      ⚠️ You still have <span id="unansweredCount"></span> unanswered question(s). Submit anyway?
+    </div>
+    <div class="quiz-nav">
+      <button class="btn btn-secondary" id="btnPrev" onclick="goQuestion(-1)">← Previous</button>
+      <span class="nav-info" id="navInfo"></span>
+      <button class="btn btn-primary" id="btnNext" onclick="goNext()">Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS PANEL -->
+  <div class="panel" id="panelResults">
+    <div class="result-header">
+      <div class="score-circle">
+        <span class="score-number" id="scoreNum">0</span>
+        <span class="score-out">out of 30</span>
+        <span class="score-pct" id="scorePct">0%</span>
+      </div>
+      <p class="result-name" id="resultName"></p>
+      <span class="result-badge" id="resultBadge"></span>
+    </div>
+
+    <h3 class="review-title">📝 Answer Review</h3>
+    <div id="reviewList"></div>
+
+    <div class="result-actions">
+      <button class="btn btn-secondary" onclick="restartQuiz()">🔄 &nbsp; Retake Quiz</button>
+    </div>
+  </div>
+
+  <!-- LOGIN PANEL -->
+  <div class="panel" id="panelLogin">
+    <div class="login-wrap">
+      <div style="text-align:center;margin-bottom:16px;font-size:2.5rem">🔐</div>
+      <h2 class="login-title">Admin Login</h2>
+      <p class="login-sub">Access the results dashboard</p>
+      <div class="login-error" id="loginError">Invalid email or password.</div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="adminEmail" placeholder="admin@ieee.org"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">Login →</button>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div class="panel" id="panelAdmin">
+    <div class="admin-header">
+      <h2>📊 Results Dashboard</h2>
+      <p>Week 1 Networking Quiz &nbsp;·&nbsp; IEEE KSB Networking Committee</p>
+    </div>
+
+    <div class="admin-stats" id="adminStats"></div>
+
+    <div class="table-wrap">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Student ID</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Status</th>
+            <th>Submitted At</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn export-btn" onclick="exportExcel()">⬇️ &nbsp; Export to Excel</button>
+      <button class="btn btn-secondary" onclick="clearData()" style="color:var(--wrong)">🗑️ &nbsp; Clear All Data</button>
+      <button class="btn btn-secondary" onclick="adminLogout()" style="margin-left:auto">Logout</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+/* ══════════════════════════════════════════════
+   QUESTIONS DATA
+══════════════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    q: "Which type of network covers a single building or office, such as a home network or a computer lab?",
+    opts: ["WAN","LAN","MAN","WLAN"],
+    ans: 1
+  },
+  {
+    q: "A network connects several buildings of a university or spans an entire city. Which type is it?",
+    opts: ["LAN","WAN","WLAN","MAN"],
+    ans: 3
+  },
+  {
+    q: "A hospital links the networks of its buildings on one campus, and also links the campus to a branch in another country. Which pair of network types best describes these two links (in that order)?",
+    opts: ["LAN and MAN","WLAN and LAN","MAN and WAN","WAN and MAN"],
+    ans: 2
+  },
+  {
+    q: "What is the main difference between a WLAN and a regular LAN?",
+    opts: ["A WLAN covers entire countries","A WLAN needs no devices at all","A WLAN uses Wi-Fi instead of cables","A WLAN is always slower than a LAN"],
+    ans: 2
+  },
+  {
+    q: "What is the function of a Switch?",
+    opts: ["Connects devices within the same network","Connects different networks together","Provides Wi-Fi to devices","Stores files and provides services"],
+    ans: 0
+  },
+  {
+    q: "Which device connects different networks together (for example, your home network to the Internet)?",
+    opts: ["Switch","Access Point","Router","Server"],
+    ans: 2
+  },
+  {
+    q: "Which device is responsible for providing wireless connectivity to devices?",
+    opts: ["Switch","Router only","Server","Access Point"],
+    ans: 3
+  },
+  {
+    q: "Which of the following is an End Device?",
+    opts: ["Switch","PC / Laptop","Router","Access Point"],
+    ans: 1
+  },
+  {
+    q: "A Server is a device that:",
+    opts: ["Provides services and resources to other devices","Only converts electrical signals to light","Connects two cables together","Is used by admins only for printing"],
+    ans: 0
+  },
+  {
+    q: "What is the most commonly used wired transmission medium?",
+    opts: ["Fiber Optic","Coaxial","UTP Cable","Radio Waves"],
+    ans: 2
+  },
+  {
+    q: "What do wireless networks use to transmit data?",
+    opts: ["Light pulses inside glass","Electrical signals in copper","Radio waves","Sound waves"],
+    ans: 2
+  },
+  {
+    q: "A Straight-through cable is normally used to connect:",
+    opts: ["PC to PC","Switch to Switch","Router to Router","PC to Switch"],
+    ans: 3
+  },
+  {
+    q: "A Crossover cable is normally used to connect:",
+    opts: ["Devices of the same type (e.g. Switch to Switch)","PC to Switch","PC to Access Point","Router to Switch"],
+    ans: 0
+  },
+  {
+    q: "Which list contains ONLY connections that traditionally require a Crossover cable?",
+    opts: ["PC to Switch, Switch to Router","PC to PC, PC to Switch, Router to Router","PC to PC, Switch to Switch, Router to Router","Switch to Switch, Switch to Router, PC to PC"],
+    ans: 2
+  },
+  {
+    q: "What is the core size of Single-Mode Fiber (SMF)?",
+    opts: ["About 50 to 62.5 micrometers","About 8 to 10 micrometers","About 100 micrometers","About 1 mm"],
+    ans: 1
+  },
+  {
+    q: "Which light source does Single-Mode Fiber use?",
+    opts: ["LED","Ordinary bulb","Laser","Infrared only"],
+    ans: 2
+  },
+  {
+    q: "Which light source does Multi-Mode Fiber use?",
+    opts: ["LED","Laser","Radio signal","X-ray"],
+    ans: 0
+  },
+  {
+    q: "Which type of fiber supports very long distances (tens of kilometers)?",
+    opts: ["Multi-Mode","UTP","Both equally","Single-Mode"],
+    ans: 3
+  },
+  {
+    q: "Approximately what is the maximum distance supported by Multi-Mode Fiber, according to the lecture?",
+    opts: ["About 2 km","About 20 km","About 200 km","About 2000 km"],
+    ans: 0
+  },
+  {
+    q: "Which fiber type is best suited for a network inside a data center?",
+    opts: ["Single-Mode, because it is cheaper","Multi-Mode, because it is cheaper and distances are short","Wireless only","Data centers do not use fiber"],
+    ans: 1
+  },
+  {
+    q: "A university must link two campuses 15 km apart with fiber and also wire a server room inside one building. Which choice is the most appropriate?",
+    opts: ["Single-Mode for the 15 km link, Multi-Mode inside the building","Multi-Mode for the 15 km link, Single-Mode inside the building","Multi-Mode for both, because it is cheaper","Single-Mode for both, because it uses an LED"],
+    ans: 0
+  },
+  {
+    q: "When a device sends a message to one specific device only, this is called:",
+    opts: ["Broadcast","Multicast","Unicast","Anycast"],
+    ans: 2
+  },
+  {
+    q: "A message sent from one device to a specific group of devices is called:",
+    opts: ["Multicast","Unicast","Broadcast","Loopback"],
+    ans: 0
+  },
+  {
+    q: "A message sent from one device to all devices on the network is called:",
+    opts: ["Unicast","Multicast","Peer-to-peer","Broadcast"],
+    ans: 3
+  },
+  {
+    q: "In which topology are all devices connected to a central device (such as a switch)?",
+    opts: ["Star","Bus","Ring","Mesh"],
+    ans: 0
+  },
+  {
+    q: "Which topology uses a single shared main cable for all devices?",
+    opts: ["Star","Mesh","Bus","Ring"],
+    ans: 2
+  },
+  {
+    q: "In a Ring topology, each device is connected to:",
+    opts: ["Every other device","One central device","One shared cable","Two neighboring devices, forming a closed loop"],
+    ans: 3
+  },
+  {
+    q: "Using the Mesh formula CN = D × (D - 1) / 2, how many cables are needed to fully mesh 6 devices?",
+    opts: ["12","36","30","15"],
+    ans: 3
+  },
+  {
+    q: "A full mesh network uses 28 cables in total. How many devices does it connect? (CN = D × (D - 1) / 2)",
+    opts: ["7","8","9","10"],
+    ans: 1
+  },
+  {
+    q: "A 5-person startup shares files directly between laptops with no dedicated machine. Later it grows to 200 employees and needs centralized control and better security. Which model change fits best?",
+    opts: ["Stay Peer-to-Peer, since it scales best","Move from Client-Server to Peer-to-Peer","Move from Peer-to-Peer to Client-Server with a dedicated server","Switch to Broadcast messaging only"],
+    ans: 2
+  }
+];
+
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const TOTAL_TIME   = 20 * 60; // seconds
+const ADMIN_USERS  = [
+  { email: "kareemyounis75@gmail.com", pass: "KSA@2006" },
+  { email: "am3365568@gmail.com",      pass: "KSA@2006" }
+];
+const STORAGE_KEY  = "ieee_ksb_quiz_results";
+const PASS_MARK    = 0.6;
+
+// ► بعد ما تعمل Google Apps Script Web App، احط الـ URL هنا:
+const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+
+const LETTERS = ["A","B","C","D"];
+
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+let currentQ     = 0;
+let answers      = new Array(QUESTIONS.length).fill(null);
+let timerID      = null;
+let timeLeft     = TOTAL_TIME;
+let studentName  = "";
+let studentId    = "";
+let quizActive   = false;
+let modalPending = false;
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showToast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+function fmtTime(s) {
+  const m = String(Math.floor(s/60)).padStart(2,'0');
+  const sc= String(s%60).padStart(2,'0');
+  return `${m}:${sc}`;
+}
+
+/* ══════════════════════════════════════════════
+   TIMER
+══════════════════════════════════════════════ */
+function startTimer() {
+  timeLeft = TOTAL_TIME;
+  updateTimerDisplay();
+  document.getElementById('timerDisplay').style.display = 'flex';
+  timerID = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerID);
+      autoSubmit();
+    }
+  }, 1000);
+}
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  el.textContent = fmtTime(timeLeft);
+  el.classList.toggle('warning', timeLeft <= 120);
+}
+function stopTimer() {
+  if (timerID) { clearInterval(timerID); timerID = null; }
+}
+
+/* ══════════════════════════════════════════════
+   AUTO-SUBMIT
+══════════════════════════════════════════════ */
+function autoSubmit() {
+  if (!quizActive) return;
+  quizActive = false;
+  modalPending = true;
+  document.getElementById('timeoutModal').classList.add('active');
+}
+function dismissModal() {
+  document.getElementById('timeoutModal').classList.remove('active');
+  modalPending = false;
+  submitQuiz(true);
+}
+
+/* ══════════════════════════════════════════════
+   QUIZ LOGIC
+══════════════════════════════════════════════ */
+function startQuiz() {
+  const nameEl = document.getElementById('studentName');
+  studentName  = nameEl.value.trim();
+  studentId    = document.getElementById('studentId').value.trim();
+  if (!studentName) {
+    nameEl.classList.add('error');
+    nameEl.focus();
+    showToast('Please enter your full name first!');
+    return;
+  }
+  nameEl.classList.remove('error');
+  answers      = new Array(QUESTIONS.length).fill(null);
+  currentQ     = 0;
+  quizActive   = true;
+  buildDots();
+  renderQuestion();
+  showPanel('panelQuiz');
+  startTimer();
+}
+
+function buildDots() {
+  const row = document.getElementById('dotsRow');
+  row.innerHTML = '';
+  QUESTIONS.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.id = `dot-${i}`;
+    row.appendChild(d);
+  });
+}
+function updateDots() {
+  QUESTIONS.forEach((_,i) => {
+    const d = document.getElementById(`dot-${i}`);
+    d.className = 'dot' +
+      (i === currentQ ? ' current' : (answers[i] !== null ? ' answered' : ''));
+  });
+  // progress bar
+  const done = answers.filter(a=>a!==null).length;
+  document.getElementById('progressBar').style.width = (done/QUESTIONS.length*100)+'%';
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  document.getElementById('qCounter').textContent = `Question ${currentQ+1} of ${QUESTIONS.length}`;
+  document.getElementById('qBadge').textContent   = `Q${currentQ+1}`;
+  document.getElementById('qText').textContent    = q.q;
+
+  const wrap = document.getElementById('optionsWrap');
+  wrap.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const lbl = document.createElement('label');
+    lbl.className = 'option' + (answers[currentQ]===i ? ' selected' : '');
+    lbl.innerHTML = `
+      <input type="radio" name="q" value="${i}" ${answers[currentQ]===i?'checked':''}>
+      <span class="option-letter">${LETTERS[i]}</span>
+      <span class="option-text">${opt}</span>`;
+    lbl.onclick = () => selectOption(i);
+    wrap.appendChild(lbl);
+  });
+
+  document.getElementById('btnPrev').style.visibility = currentQ===0?'hidden':'visible';
+  const isLast = currentQ === QUESTIONS.length-1;
+  const btnNext = document.getElementById('btnNext');
+  btnNext.textContent = isLast ? '✅  Submit' : 'Next →';
+  document.getElementById('navInfo').textContent =
+    `${answers.filter(a=>a!==null).length} / ${QUESTIONS.length} answered`;
+
+  document.getElementById('submitWarning').style.display = 'none';
+  updateDots();
+}
+
+function selectOption(i) {
+  answers[currentQ] = i;
+  document.querySelectorAll('.option').forEach((el,idx) => {
+    el.classList.toggle('selected', idx===i);
+    el.querySelector('.option-letter').style.background = idx===i ? 'var(--ieee-blue)' : '';
+    el.querySelector('.option-letter').style.color      = idx===i ? '#fff' : '';
+  });
+  updateDots();
+  document.getElementById('navInfo').textContent =
+    `${answers.filter(a=>a!==null).length} / ${QUESTIONS.length} answered`;
+}
+
+function goQuestion(dir) {
+  currentQ = Math.max(0, Math.min(QUESTIONS.length-1, currentQ+dir));
+  renderQuestion();
+}
+function goNext() {
+  if (currentQ < QUESTIONS.length-1) {
+    goQuestion(1);
+  } else {
+    // last question → try submit
+    const unanswered = answers.filter(a=>a===null).length;
+    if (unanswered > 0) {
+      document.getElementById('unansweredCount').textContent = unanswered;
+      const warn = document.getElementById('submitWarning');
+      if (warn.style.display === 'block') {
+        submitQuiz(false);
+      } else {
+        warn.style.display = 'block';
+        document.getElementById('btnNext').textContent = '⚠️  Submit Anyway';
+      }
+    } else {
+      submitQuiz(false);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   GOOGLE SHEETS SYNC
+══════════════════════════════════════════════ */
+async function sendToSheets(payload) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_YOUR')) return;
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    console.warn('Google Sheets sync failed (offline?):', err);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   SUBMIT & RESULTS
+══════════════════════════════════════════════ */
+function submitQuiz(auto=false) {
+  if (!quizActive && !auto && !modalPending) return;
+  quizActive = false;
+  stopTimer();
+
+  const usedSeconds = TOTAL_TIME - timeLeft;
+  const timeTaken   = fmtTime(usedSeconds);
+
+  let score = 0;
+  answers.forEach((a,i) => { if (a === QUESTIONS[i].ans) score++; });
+  const pct  = Math.round(score/QUESTIONS.length*100);
+  const pass = pct >= PASS_MARK*100;
+  const now  = new Date().toLocaleString('en-EG');
+
+  // Save to localStorage
+  const record = { name: studentName, id: studentId, score, pct, pass, time: now };
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+  all.unshift(record);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+
+  // Send to Google Sheets
+  sendToSheets({
+    name:        studentName,
+    studentId:   studentId || '',
+    score:       score,
+    total:       QUESTIONS.length,
+    pct:         pct,
+    pass:        pass,
+    submittedAt: now,
+    timeTaken:   timeTaken
+  });
+
+  // Render results
+  document.getElementById('scoreNum').textContent  = score;
+  document.getElementById('scorePct').textContent  = pct+'%';
+  document.getElementById('resultName').textContent = studentName + (studentId ? ` (${studentId})` : '');
+  const badge = document.getElementById('resultBadge');
+  badge.textContent  = pass ? '🎉 Passed!' : '❌ Not Passed';
+  badge.className    = 'result-badge ' + (pass ? 'badge-pass' : 'badge-fail');
+
+  buildReview();
+  showPanel('panelResults');
+  document.getElementById('timerDisplay').style.display = 'none';
+  document.getElementById('progressBar').style.width = '100%';
+  if (auto) showToast("⏰ Time's up! Exam submitted automatically.");
+}
+
+function buildReview() {
+  const list = document.getElementById('reviewList');
+  list.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const userAns = answers[i];
+    const correct = q.ans;
+    const isOk    = userAns === correct;
+    const skipped = userAns === null;
+
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    item.innerHTML = `
+      <div class="review-q">
+        <span class="review-icon">${isOk?'✅':'❌'}</span>
+        <span>Q${i+1}. ${q.q}</span>
+      </div>
+      <div class="review-answers">
+        <div class="review-answer ${skipped?'skip-answer':(isOk?'correct-ans':'your-answer')}">
+          <span class="label">Your Answer</span>
+          ${skipped ? 'Not answered' : `${LETTERS[userAns]}. ${q.opts[userAns]}`}
+        </div>
+        ${!isOk ? `<div class="review-answer correct-ans">
+          <span class="label">Correct Answer</span>
+          ${LETTERS[correct]}. ${q.opts[correct]}
+        </div>` : ''}
+      </div>`;
+    list.appendChild(item);
+  });
+}
+
+function restartQuiz() {
+  stopTimer();
+  quizActive = false;
+  document.getElementById('studentName').value = '';
+  document.getElementById('studentId').value   = '';
+  document.getElementById('timerDisplay').style.display = 'none';
+  document.getElementById('progressBar').style.width = '0%';
+  showPanel('panelWelcome');
+}
+
+/* ══════════════════════════════════════════════
+   ADMIN
+══════════════════════════════════════════════ */
+function doLogin() {
+  const email = document.getElementById('adminEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('adminPass').value;
+  const ok    = ADMIN_USERS.some(u => u.email.toLowerCase()===email && u.pass===pass);
+  if (!ok) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  document.getElementById('loginError').style.display = 'none';
+  showAdminPanel();
+}
+
+function showAdminPanel() {
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+  const total = all.length;
+  const avg   = total ? Math.round(all.reduce((s,r)=>s+r.pct,0)/total) : 0;
+  const passed= all.filter(r=>r.pass).length;
+  const highest = total ? Math.max(...all.map(r=>r.score)) : 0;
+
+  document.getElementById('adminStats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total Submissions</div></div>
+    <div class="stat-card"><div class="stat-num">${avg}%</div><div class="stat-label">Average Score</div></div>
+    <div class="stat-card"><div class="stat-num">${passed}</div><div class="stat-label">Passed</div></div>
+    <div class="stat-card"><div class="stat-num">${total-passed}</div><div class="stat-label">Failed</div></div>
+    <div class="stat-card"><div class="stat-num">${highest}/30</div><div class="stat-label">Highest Score</div></div>
+  `;
+
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  if (total === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:32px">No submissions yet.</td></tr>';
+  } else {
+    all.forEach((r,i) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${i+1}</td>
+          <td><strong>${r.name}</strong></td>
+          <td>${r.id||'—'}</td>
+          <td>${r.score} / 30</td>
+          <td>${r.pct}%</td>
+          <td><span class="badge-sm ${r.pass?'pass':'fail'}">${r.pass?'Passed':'Failed'}</span></td>
+          <td>${r.time}</td>
+        </tr>`;
+    });
+  }
+  showPanel('panelAdmin');
+}
+
+function exportExcel() {
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+  if (!all.length) { showToast('No data to export!'); return; }
+
+  // Build CSV
+  const BOM = '\uFEFF';
+  const header = ['#','Name','Student ID','Score','Percentage','Status','Submitted At'];
+  const rows = all.map((r,i) =>
+    [i+1, `"${r.name}"`, `"${r.id||''}"`, r.score+'/30', r.pct+'%', r.pass?'Passed':'Failed', `"${r.time}"`].join(',')
+  );
+  const csv = BOM + header.join(',') + '\n' + rows.join('\n');
+
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `IEEE_KSB_Week1_Quiz_Results_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ Excel file exported!');
+}
+
+function clearData() {
+  if (!confirm('Are you sure you want to delete ALL results? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  showToast('All data cleared.');
+  showAdminPanel();
+}
+
+function adminLogout() {
+  document.getElementById('adminEmail').value = '';
+  document.getElementById('adminPass').value  = '';
+  showPanel('panelWelcome');
+}
+
+/* ══════════════════════════════════════════════
+   URL ROUTING — ?admin=1 goes to login
+══════════════════════════════════════════════ */
+(function init() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('admin') === '1') {
+    document.getElementById('headerSub').textContent = 'Admin Dashboard';
+    showPanel('panelLogin');
+  }
+})();
+</script>
+</body>
+</html>

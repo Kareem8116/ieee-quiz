@@ -1,0 +1,10 @@
+# Byte-compiled / optimized / DLL files
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor dirs
+.vscode/
+.idea/
