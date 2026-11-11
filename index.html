@@ -614,11 +614,6 @@
       <label for="studentName">Full Name *</label>
       <input type="text" id="studentName" placeholder="Enter your full name…" autocomplete="name"/>
     </div>
-    <div class="form-group">
-      <label for="studentId">Student ID / IEEE ID <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
-      <input type="text" id="studentId" placeholder="e.g. 20231234"/>
-    </div>
-
     <button class="btn btn-primary" onclick="startQuiz()">
       🚀 &nbsp; Start Exam
     </button>
@@ -978,7 +973,7 @@ function dismissModal() {
 function startQuiz() {
   const nameEl = document.getElementById('studentName');
   studentName  = nameEl.value.trim();
-  studentId    = document.getElementById('studentId').value.trim();
+  studentId    = '';
   if (!studentName) {
     nameEl.classList.add('error');
     nameEl.focus();
@@ -1096,10 +1091,12 @@ function goNext() {
 }
 
 /* ══════════════════════════════════════════════
-   GOOGLE SHEETS SYNC
+   GOOGLE SHEETS SYNC — with retry on failure
 ══════════════════════════════════════════════ */
-async function sendToSheets(payload) {
+async function sendToSheets(payload, attempt = 1) {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_YOUR')) return;
+  const MAX_ATTEMPTS = 4;
+  const DELAY_MS     = [0, 1500, 3000, 6000]; // exponential backoff
   try {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -1108,7 +1105,11 @@ async function sendToSheets(payload) {
       body: JSON.stringify(payload)
     });
   } catch (err) {
-    console.warn('Google Sheets sync failed (offline?):', err);
+    if (attempt < MAX_ATTEMPTS) {
+      await new Promise(r => setTimeout(r, DELAY_MS[attempt]));
+      return sendToSheets(payload, attempt + 1);
+    }
+    console.warn('Sheets sync failed after retries:', err);
   }
 }
 
