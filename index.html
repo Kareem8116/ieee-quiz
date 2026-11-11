@@ -476,6 +476,40 @@
       padding: 12px 16px; font-size: .88rem; margin-bottom: 16px; display: none;
     }
 
+    /* ─── LEAVE WARNING OVERLAY ─── */
+    .leave-warning {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.75);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    .leave-warning.active { opacity: 1; pointer-events: all; }
+    .leave-box {
+      background: #fff; border-radius: 20px; padding: 40px 36px;
+      max-width: 360px; width: 90%; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+      animation: popIn .3s ease;
+    }
+    @keyframes popIn { from { transform: scale(.85); } to { transform: scale(1); } }
+    .leave-box .leave-icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .leave-box h2 { font-size: 1.3rem; font-weight: 800; color: #dc2626; margin-bottom: 10px; }
+    .leave-box p  { font-size: .95rem; color: #4b5563; margin-bottom: 24px; line-height: 1.6; }
+    .leave-countdown-num {
+      display: inline-block; font-size: 2.5rem; font-weight: 800;
+      color: #dc2626; min-width: 60px;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+    .leave-back-btn {
+      background: linear-gradient(135deg,#003865,#00629B);
+      color: #fff; border: none; border-radius: 10px;
+      padding: 14px 32px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; width: 100%; font-family: inherit;
+      transition: transform .15s;
+    }
+    .leave-back-btn:hover { transform: translateY(-2px); }
+
     /* ─── TOAST ─── */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
@@ -565,6 +599,19 @@
     <div class="modal-title">Time's Up!</div>
     <div class="modal-msg">Your exam has been submitted automatically. Calculating your results…</div>
     <button class="btn btn-primary" onclick="dismissModal()">View Results</button>
+  </div>
+</div>
+
+<!-- ─── LEAVE WARNING OVERLAY ─── -->
+<div class="leave-warning" id="leaveWarning">
+  <div class="leave-box">
+    <div class="leave-icon">⚠️</div>
+    <h2>الكويز لسه شغال!</h2>
+    <p>خرجت من الكويز — لو مرجعتش خلال<br>
+      <span class="leave-countdown-num" id="leaveCountdown">15</span> ثانية<br>
+      <strong>هيتسلم لوحده!</strong>
+    </p>
+    <button class="leave-back-btn" onclick="returnToQuiz()">↩ ارجع للكويز</button>
   </div>
 </div>
 
@@ -1314,6 +1361,70 @@ function adminLogout() {
     showPanel('panelLogin');
   }
 })();
+
+/* ══════════════════════════════════════════════
+   ANTI-CHEAT: Block leaving during quiz
+══════════════════════════════════════════════ */
+let _leaveTimer = null;
+
+// 1) Block browser close / navigate away
+window.addEventListener('beforeunload', function(e) {
+  if (!quizActive) return;
+  // Send current answers via sendBeacon (works even on page unload)
+  _beaconSubmit('[Left Page]');
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+// 2) Tab switch / app switch (mobile)
+document.addEventListener('visibilitychange', function() {
+  if (!quizActive) return;
+  if (document.hidden) {
+    // Show warning overlay and start countdown
+    document.getElementById('leaveWarning').classList.add('active');
+    let secs = 15;
+    document.getElementById('leaveCountdown').textContent = secs;
+    _leaveTimer = setInterval(() => {
+      secs--;
+      document.getElementById('leaveCountdown').textContent = secs;
+      if (secs <= 0) {
+        clearInterval(_leaveTimer);
+        _leaveTimer = null;
+        document.getElementById('leaveWarning').classList.remove('active');
+        submitQuiz(true);
+      }
+    }, 1000);
+  } else {
+    // User came back — cancel
+    if (_leaveTimer) { clearInterval(_leaveTimer); _leaveTimer = null; }
+    document.getElementById('leaveWarning').classList.remove('active');
+  }
+});
+
+function returnToQuiz() {
+  if (_leaveTimer) { clearInterval(_leaveTimer); _leaveTimer = null; }
+  document.getElementById('leaveWarning').classList.remove('active');
+}
+
+function _beaconSubmit(note) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_YOUR')) return;
+  if (!studentName) return;
+  let score = 0;
+  answers.forEach((a, i) => { if (a === QUESTIONS[i].ans) score++; });
+  const pct = Math.round(score / QUESTIONS.length * 100);
+  const pass = pct >= PASS_MARK * 100;
+  const usedSecs = TOTAL_TIME - timeLeft;
+  const payload = JSON.stringify({
+    name: studentName + (note ? ' ' + note : ''),
+    studentId: '',
+    score, total: QUESTIONS.length, pct, pass,
+    submittedAt: new Date().toLocaleString('en-EG'),
+    timeTaken: fmtTime(usedSecs)
+  });
+  try {
+    navigator.sendBeacon(APPS_SCRIPT_URL, new Blob([payload], { type: 'application/json' }));
+  } catch(e) {}
+}
 </script>
 </body>
 </html>
