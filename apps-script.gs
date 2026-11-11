@@ -1,36 +1,67 @@
 // =====================================================
 // IEEE KSB Quiz – Google Apps Script Web App
-// ✅ Fixed: LockService prevents concurrent-write data loss
-// =====================================================
-// الـ Sheet:
-// https://docs.google.com/spreadsheets/d/1QstBc6sR3Uzs7QjqvsH2DcdN6H5wsNFXQu1yT4uxxLs/edit
-//
-// خطوات تحديث الـ Deploy:
-//   1. افتح الـ Spreadsheet → Extensions → Apps Script
-//   2. استبدل الكود القديم بالكود ده
-//   3. Deploy → Manage Deployments → Edit (✏️) → New Version → Deploy
-//      ⚠️ لازم تعمل New Version مش نفس الـ deployment القديم
+// ✅ Fixed: LockService + doGet for Admin Dashboard
 // =====================================================
 
-const SHEET_NAME = "Quiz Results";
+const SHEET_NAME  = "Quiz Results";
+const ADMIN_KEY   = "IEEE_KSB_ADMIN_2024";
 
+/* ── doGet: Admin Dashboard reads from Sheet ── */
+function doGet(e) {
+  if (!e.parameter || e.parameter.key !== ADMIN_KEY) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "unauthorized" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  try {
+    const ss    = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEET_NAME);
+    if (!sheet || sheet.getLastRow() <= 1) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "ok", data: [] }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const rows = sheet.getDataRange().getValues();
+    const data = rows.slice(1).map(r => ({
+      num:         r[0],
+      name:        r[1],
+      score:       r[2],
+      total:       r[3],
+      pct:         String(r[4]).replace('%',''),
+      pass:        String(r[5]).includes('Passed'),
+      submittedAt: r[6],
+      timeTaken:   r[7]
+    }));
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok", data }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/* ── doPost: Student submission with LockService ── */
 function doPost(e) {
-  // ── LockService: يمنع الـ race condition لما اتنين يسلموا بالظبط في نفس الوقت
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000); // استنى لحد 30 ثانية علشان يلاقي slot
+    lock.waitLock(30000);
   } catch (lockErr) {
-    // لو مقدرش ياخد الـ lock، بيرجع error واضح
     return ContentService
       .createTextOutput(JSON.stringify({ status: "lock_timeout", message: "Server busy, please retry." }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
   try {
-    const data = JSON.parse(e.postData.contents);
-    const ss   = SpreadsheetApp.getActiveSpreadsheet();
+    const data  = JSON.parse(e.postData.contents);
+    const ss    = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet   = ss.getSheetByName(SHEET_NAME);
 
-    let sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) {
       sheet = ss.insertSheet(SHEET_NAME);
       sheet.appendRow(["#","Name","Score","Out of","Percentage (%)","Status","Submitted At","Time Taken"]);
@@ -50,7 +81,7 @@ function doPost(e) {
     }
 
     const lastRow = sheet.getLastRow();
-    const rowNum  = lastRow; // 1-based data row count
+    const rowNum  = lastRow;
 
     sheet.appendRow([
       rowNum,
@@ -63,11 +94,8 @@ function doPost(e) {
       data.timeTaken
     ]);
 
-    // Color-code the row
     const newRow = sheet.getRange(lastRow + 1, 1, 1, 8);
     newRow.setBackground(data.pass ? "#f0fdf4" : "#fff1f2");
-
-    // Flush to make sure write completes before lock is released
     SpreadsheetApp.flush();
 
     return ContentService
@@ -79,7 +107,6 @@ function doPost(e) {
       .createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   } finally {
-    // دايماً يحرر الـ lock حتى لو في error
     lock.releaseLock();
   }
 }

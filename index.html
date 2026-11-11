@@ -703,7 +703,6 @@
           <tr>
             <th>#</th>
             <th>Name</th>
-            <th>Student ID</th>
             <th>Score</th>
             <th>Percentage</th>
             <th>Status</th>
@@ -1156,7 +1155,6 @@ function submitQuiz(auto=false) {
   badge.textContent  = pass ? '🎉 Passed!' : '❌ Not Passed';
   badge.className    = 'result-badge ' + (pass ? 'badge-pass' : 'badge-fail');
 
-  buildReview();
   document.body.classList.remove('quiz-mode');
   showPanel('panelResults');
   document.getElementById('timerDisplay').style.display = 'none';
@@ -1199,7 +1197,7 @@ function restartQuiz() {
   quizActive = false;
   document.body.classList.remove('quiz-mode');
   document.getElementById('studentName').value = '';
-  document.getElementById('studentId').value   = '';
+  studentId = '';
   document.getElementById('timerDisplay').style.display = 'none';
   document.getElementById('progressBar').style.width = '0%';
   showPanel('panelWelcome');
@@ -1221,50 +1219,65 @@ function doLogin() {
 }
 
 function showAdminPanel() {
-  const all = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
-  const total = all.length;
-  const avg   = total ? Math.round(all.reduce((s,r)=>s+r.pct,0)/total) : 0;
-  const passed= all.filter(r=>r.pass).length;
-  const highest = total ? Math.max(...all.map(r=>r.score)) : 0;
+  showPanel('panelAdmin');
+  document.getElementById('adminStats').innerHTML = `<div class="stat-card"><div class="stat-num">⏳</div><div class="stat-label">Loading...</div></div>`;
+  document.getElementById('resultsBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:32px">Loading data from Google Sheets...</td></tr>';
+
+  fetch(APPS_SCRIPT_URL + '?key=IEEE_KSB_ADMIN_2024')
+    .then(r => r.json())
+    .then(res => {
+      if (res.status !== 'ok') throw new Error(res.message || res.status);
+      _renderAdminTable(res.data);
+    })
+    .catch(err => {
+      console.warn('Sheets fetch failed:', err);
+      document.getElementById('resultsBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:32px">⚠️ Could not load data. Check Apps Script deployment.</td></tr>';
+      document.getElementById('adminStats').innerHTML = `<div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Error loading</div></div>`;
+    });
+}
+
+function _renderAdminTable(all) {
+  window._adminData = all;
+  const total   = all.length;
+  const avg     = total ? Math.round(all.reduce((s,r) => s + Number(r.pct), 0) / total) : 0;
+  const passed  = all.filter(r => r.pass).length;
+  const highest = total ? Math.max(...all.map(r => Number(r.score))) : 0;
 
   document.getElementById('adminStats').innerHTML = `
     <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total Submissions</div></div>
     <div class="stat-card"><div class="stat-num">${avg}%</div><div class="stat-label">Average Score</div></div>
     <div class="stat-card"><div class="stat-num">${passed}</div><div class="stat-label">Passed</div></div>
-    <div class="stat-card"><div class="stat-num">${total-passed}</div><div class="stat-label">Failed</div></div>
+    <div class="stat-card"><div class="stat-num">${total - passed}</div><div class="stat-label">Failed</div></div>
     <div class="stat-card"><div class="stat-num">${highest}/30</div><div class="stat-label">Highest Score</div></div>
   `;
 
   const tbody = document.getElementById('resultsBody');
   tbody.innerHTML = '';
-  if (total === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:32px">No submissions yet.</td></tr>';
+  if (!total) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:32px">No submissions yet.</td></tr>';
   } else {
-    all.forEach((r,i) => {
+    all.forEach((r, i) => {
       tbody.innerHTML += `
         <tr>
-          <td>${i+1}</td>
+          <td>${i + 1}</td>
           <td><strong>${r.name}</strong></td>
-          <td>${r.id||'—'}</td>
-          <td>${r.score} / 30</td>
+          <td>${r.score} / ${r.total}</td>
           <td>${r.pct}%</td>
-          <td><span class="badge-sm ${r.pass?'pass':'fail'}">${r.pass?'Passed':'Failed'}</span></td>
-          <td>${r.time}</td>
+          <td><span class="badge-sm ${r.pass ? 'pass' : 'fail'}">${r.pass ? 'Passed' : 'Failed'}</span></td>
+          <td>${r.submittedAt}</td>
         </tr>`;
     });
   }
-  showPanel('panelAdmin');
 }
 
 function exportExcel() {
-  const all = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+  const all = window._adminData || [];
   if (!all.length) { showToast('No data to export!'); return; }
 
-  // Build CSV
   const BOM = '\uFEFF';
-  const header = ['#','Name','Student ID','Score','Percentage','Status','Submitted At'];
+  const header = ['#','Name','Score','Percentage','Status','Submitted At'];
   const rows = all.map((r,i) =>
-    [i+1, `"${r.name}"`, `"${r.id||''}"`, r.score+'/30', r.pct+'%', r.pass?'Passed':'Failed', `"${r.time}"`].join(',')
+    [i+1, `"${r.name}"`, r.score+'/'+r.total, r.pct+'%', r.pass?'Passed':'Failed', `"${r.submittedAt}"`].join(',')
   );
   const csv = BOM + header.join(',') + '\n' + rows.join('\n');
 
