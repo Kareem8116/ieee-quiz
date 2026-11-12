@@ -740,6 +740,7 @@
     <div class="admin-header">
       <h2>📊 Results Dashboard</h2>
       <p>Week 1 Networking Quiz &nbsp;·&nbsp; IEEE KSB Networking Committee</p>
+      <p id="lastUpdated" style="font-size:.75rem;opacity:.65;margin-top:6px;">🔄 Auto-refreshes every 10s</p>
     </div>
 
     <div class="admin-stats" id="adminStats"></div>
@@ -1265,16 +1266,29 @@ function doLogin() {
   showAdminPanel();
 }
 
+let _adminRefreshTimer = null;
+
 function showAdminPanel() {
   showPanel('panelAdmin');
   document.getElementById('adminStats').innerHTML = `<div class="stat-card"><div class="stat-num">⏳</div><div class="stat-label">Loading...</div></div>`;
   document.getElementById('resultsBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:32px">Loading data from Google Sheets...</td></tr>';
 
+  _fetchAdminData();
+
+  // Auto-refresh every 10 seconds
+  if (_adminRefreshTimer) clearInterval(_adminRefreshTimer);
+  _adminRefreshTimer = setInterval(_fetchAdminData, 10000);
+}
+
+function _fetchAdminData() {
   fetch(APPS_SCRIPT_URL + '?key=IEEE_KSB_ADMIN_2024')
     .then(r => r.json())
     .then(res => {
       if (res.status !== 'ok') throw new Error(res.message || res.status);
       _renderAdminTable(res.data);
+      // Show last updated time
+      const el = document.getElementById('lastUpdated');
+      if (el) el.textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-EG');
     })
     .catch(err => {
       console.warn('Sheets fetch failed:', err);
@@ -1346,6 +1360,7 @@ function clearData() {
 }
 
 function adminLogout() {
+  if (_adminRefreshTimer) { clearInterval(_adminRefreshTimer); _adminRefreshTimer = null; }
   document.getElementById('adminEmail').value = '';
   document.getElementById('adminPass').value  = '';
   showPanel('panelWelcome');
