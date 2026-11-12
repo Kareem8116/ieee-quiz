@@ -83,7 +83,7 @@ function doPost(e) {
     const sheet   = getSheet();
     const lastRow = sheet.getLastRow();
     sheet.appendRow([
-      lastRow, data.name, data.score, data.total,
+      lastRow, data.name, "", data.score, data.total,
       data.pct + "%",
       data.pass ? "Passed ✅" : "Failed ❌",
       data.submittedAt, data.timeTaken
