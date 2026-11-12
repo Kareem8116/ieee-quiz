@@ -88,7 +88,9 @@ function doPost(e) {
       data.pass ? "Passed ✅" : "Failed ❌",
       data.submittedAt, data.timeTaken
     ]);
-    sheet.getRange(lastRow+1,1,1,8).setBackground(data.pass ? "#f0fdf4" : "#fff1f2");
+    // Force text format on Submitted At & Time Taken to prevent date/time auto-conversion
+    sheet.getRange(lastRow+1, 8, 1, 2).setNumberFormat('@STRING@');
+    sheet.getRange(lastRow+1, 1, 1, 9).setBackground(data.pass ? "#f0fdf4" : "#fff1f2");
     SpreadsheetApp.flush();
     return ContentService
       .createTextOutput(JSON.stringify({ status: "ok", row: lastRow+1 }))
